@@ -1,8 +1,10 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
+import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 
 import {
   Alert,
+  Image,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -17,7 +19,12 @@ import { ThemedText } from "../components/ThemedText";
 type NewEntryProps = {
   visible: boolean;
   onClose: () => void;
-  onSave: (entry: { title: string; story: string }) => void;
+  onSave: (entry: {
+    title: string;
+    story: string;
+    date: Date;
+    photo: string[];
+  }) => void;
 };
 
 export function NewEntry({ visible, onClose, onSave }: NewEntryProps) {
@@ -25,13 +32,42 @@ export function NewEntry({ visible, onClose, onSave }: NewEntryProps) {
   const [story, setStory] = useState("");
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [photo, setPhoto] = useState<string[]>([]);
 
+  const pickImage = async () => {
+    // Ask for permission
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (status !== "granted") {
+      Alert.alert("Permission needed", "Please allow access to your photos");
+      return;
+    }
+    if (photo.length >= 5) {
+      Alert.alert("Limit reached", "You can only add up to 5 photos");
+      return;
+    }
+
+    // Open image picker
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: false,
+      allowsMultipleSelection: true,
+      selectionLimit: 5 - photo.length,
+      quality: 0.5,
+    });
+
+    if (!result.canceled) {
+      const newPhotos = result.assets.map((asset) => asset.uri);
+      setPhoto([...photo, ...newPhotos].slice(0, 5));
+    }
+  };
   const handleSave = () => {
     // Send data back to parent
-    onSave({ title, story, date });
+    onSave({ title, story, date, photo });
     setTitle("");
     setStory("");
     setDate(new Date());
+    setPhoto([]);
     onClose();
   };
 
@@ -48,6 +84,7 @@ export function NewEntry({ visible, onClose, onSave }: NewEntryProps) {
             setTitle("");
             setStory("");
             setDate(new Date());
+            setPhoto([]);
             onClose();
           },
         },
@@ -87,18 +124,6 @@ export function NewEntry({ visible, onClose, onSave }: NewEntryProps) {
           >
             <View className="flex-1 justify-center items-center">
               <View className="flex-col bg-white w-80 h-auto border border-gray-300 rounded-lg p-4 ">
-                <TouchableOpacity
-                  onPress={() => setShowDatePicker(true)}
-                  className="mb-4 p-3 bg-gray-100 rounded-lg"
-                >
-                  <ThemedText className="text-center text-lg">
-                    {formatDate(date)}
-                  </ThemedText>
-                  <ThemedText className="text-center text-gray-500 text-sm">
-                    Tap to change date
-                  </ThemedText>
-                </TouchableOpacity>
-
                 {showDatePicker && (
                   <View className="items-center w-full">
                     <DateTimePicker
@@ -120,7 +145,50 @@ export function NewEntry({ visible, onClose, onSave }: NewEntryProps) {
                   />
                 </View>
 
-                <TouchableOpacity className="border border-gray-300 rounded-lg w-40 h-40"></TouchableOpacity>
+                {/* Photos - horizontal scroll */}
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  className="mb-4"
+                >
+                  <View className="flex-row gap-2">
+                    {/* Display selected photos */}
+                    {photo.map((uri, index) => (
+                      <View key={index} className="relative">
+                        <Image
+                          source={{ uri }}
+                          className="w-32 h-32 rounded-lg"
+                        />
+                        {/* Remove button */}
+                        <TouchableOpacity
+                          className="absolute top-1 right-1 bg-black/50 rounded-full w-6 h-6 items-center justify-center"
+                          onPress={() => {
+                            setPhoto(photo.filter((_, i) => i !== index));
+                          }}
+                        >
+                          <ThemedText className="text-white text-xs">
+                            ✕
+                          </ThemedText>
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+
+                    {/* Add photo button (show only if less than 5 photos) */}
+                    {photo.length < 5 && (
+                      <TouchableOpacity
+                        className="border border-gray-300 rounded-lg w-32 h-32 items-center justify-center"
+                        onPress={pickImage}
+                      >
+                        <ThemedText className="text-4xl text-gray-400">
+                          +
+                        </ThemedText>
+                        <ThemedText className="text-gray-400 text-sm">
+                          {photo.length}/5
+                        </ThemedText>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </ScrollView>
 
                 <TextInput
                   placeholder="Write your story.."

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Image,
   ScrollView,
   TouchableOpacity,
   View,
@@ -16,6 +17,7 @@ type Entry = {
   title: string;
   story: string;
   date: Date;
+  photo: string[];
 };
 
 export default function Index() {
@@ -60,6 +62,23 @@ export default function Index() {
               <ThemedText className="font-semibold text-3xl mb-5 border-b">
                 {entry.title}
               </ThemedText>
+              {entry.photo && entry.photo.length > 0 && (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  className="mb-4"
+                >
+                  <View className="flex-row gap-2">
+                    {entry.photo.map((uri, i) => (
+                      <Image
+                        key={i}
+                        source={{ uri }}
+                        className="w-32 h-32 rounded-lg"
+                      />
+                    ))}
+                  </View>
+                </ScrollView>
+              )}
               <ThemedText>{entry.story}</ThemedText>
             </View>
           ))}
