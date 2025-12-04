@@ -1,3 +1,4 @@
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useState } from "react";
 
 import {
@@ -22,13 +23,15 @@ type NewEntryProps = {
 export function NewEntry({ visible, onClose, onSave }: NewEntryProps) {
   const [title, setTitle] = useState("");
   const [story, setStory] = useState("");
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const handleSave = () => {
     // Send data back to parent
-    onSave({ title, story });
-    // Clear fields
+    onSave({ title, story, date });
     setTitle("");
     setStory("");
+    setDate(new Date());
     onClose();
   };
 
@@ -44,11 +47,28 @@ export function NewEntry({ visible, onClose, onSave }: NewEntryProps) {
           onPress: () => {
             setTitle("");
             setStory("");
+            setDate(new Date());
             onClose();
           },
         },
       ]
     );
+  };
+
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === "ios");
+    if (selectedDate) {
+      setDate(selectedDate);
+    }
+  };
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString("en-AU", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   };
   return (
     <Modal visible={visible} transparent animationType="fade">
@@ -66,7 +86,30 @@ export function NewEntry({ visible, onClose, onSave }: NewEntryProps) {
             keyboardShouldPersistTaps="handled"
           >
             <View className="flex-1 justify-center items-center">
-              <View className="flex-col bg-white w-80 h-auto border border-gray-300 rounded-lg p-4">
+              <View className="flex-col bg-white w-80 h-auto border border-gray-300 rounded-lg p-4 ">
+                <TouchableOpacity
+                  onPress={() => setShowDatePicker(true)}
+                  className="mb-4 p-3 bg-gray-100 rounded-lg"
+                >
+                  <ThemedText className="text-center text-lg">
+                    {formatDate(date)}
+                  </ThemedText>
+                  <ThemedText className="text-center text-gray-500 text-sm">
+                    Tap to change date
+                  </ThemedText>
+                </TouchableOpacity>
+
+                {showDatePicker && (
+                  <View className="items-center w-full">
+                    <DateTimePicker
+                      value={date}
+                      mode="date"
+                      display="compact"
+                      onChange={onDateChange}
+                    />
+                  </View>
+                )}
+
                 <View>
                   <TextInput
                     placeholder="Title"

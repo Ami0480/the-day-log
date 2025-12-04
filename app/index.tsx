@@ -15,6 +15,7 @@ import HamburgerIcon from "../assets/images/hamburger-icon.svg";
 type Entry = {
   title: string;
   story: string;
+  date: Date;
 };
 
 export default function Index() {
@@ -44,7 +45,7 @@ export default function Index() {
           {entries.map((entry, index) => (
             <View
               key={index}
-              className="bg-white w-80 h-auto border border-gray-300 rounded-lg p-4 mb-5"
+              className="bg-white w-80 h-auto border border-gray-300 rounded-xl p-4 mb-5"
               style={{
                 shadowColor: "#000",
                 shadowOffset: { width: 4, height: 4 },
@@ -53,6 +54,9 @@ export default function Index() {
                 elevation: 5,
               }}
             >
+              <ThemedText className="text-gray-500 text-sm mb-2">
+                {entry.date.toLocaleDateString()}
+              </ThemedText>
               <ThemedText className="font-semibold text-3xl mb-5 border-b">
                 {entry.title}
               </ThemedText>
