@@ -7,6 +7,7 @@ import {
   View,
   useColorScheme,
 } from "react-native";
+import { CalendarView } from "../components/CalendarView";
 import { NewEntry } from "../components/new-entry";
 import { ThemedText } from "../components/ThemedText";
 import { ThemedView } from "../components/ThemedView";
@@ -28,6 +29,8 @@ export default function Index() {
   const iconColor = colorScheme === "dark" ? "#ffffff" : "#000000";
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [filterDate, setFilterDate] = useState<string | null>(null);
 
   const handleSave = (entry: Entry) => {
     if (editingIndex !== null) {
@@ -40,6 +43,24 @@ export default function Index() {
       setEntries([...entries, entry]);
     }
   };
+
+  // Get all entry dates in YYYY-MM-DD format
+  const entryDates = entries.map((entry) => {
+    const d = new Date(entry.date);
+    return d.toISOString().split("T")[0];
+  });
+
+  // Filter entries by selected date
+  const filteredEntries = filterDate
+    ? entries.filter((entry) => {
+        const d = new Date(entry.date);
+        return d.toISOString().split("T")[0] === filterDate;
+      })
+    : entries;
+
+  const handleDateSelect = (date: string) => {
+    setFilterDate(date);
+  };
   return (
     <ThemedView>
       <View className="flex-row justify-between items-center p-4">
@@ -49,13 +70,29 @@ export default function Index() {
         >
           <AddIcon width={40} height={40} fill={iconColor} />
         </TouchableOpacity>
-
-        <HamburgerIcon width={50} height={50} fill={iconColor} />
+        <TouchableOpacity onPress={() => setShowCalendar(true)}>
+          <HamburgerIcon width={50} height={50} fill={iconColor} />
+        </TouchableOpacity>
       </View>
+
+      {/* Show filter indicator */}
+      {filterDate && (
+        <View className="flex-row justify-center items-center mb-2">
+          <ThemedText className="text-gray-500">
+            Showing entries for {filterDate}
+          </ThemedText>
+          <TouchableOpacity
+            className="ml-2 bg-gray-200 px-2 py-1 rounded"
+            onPress={() => setFilterDate(null)}
+          >
+            <ThemedText className="text-sm">Clear</ThemedText>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <ScrollView className="flex-1">
         <View className="flex items-center">
-          {entries.map((entry, index) => (
+          {filteredEntries.map((entry, index) => (
             <View
               key={index}
               className="bg-white w-80 h-auto border border-gray-300 rounded-xl p-4 mb-5"
@@ -74,7 +111,8 @@ export default function Index() {
                 <TouchableOpacity
                   className="bg-orange-300 px-3 py-1 rounded"
                   onPress={() => {
-                    setEditingIndex(index);
+                    const originalIndex = entries.indexOf(entry);
+                    setEditingIndex(originalIndex);
                     setTimeout(() => setShowForm(true), 10);
                   }}
                 >
@@ -130,6 +168,13 @@ export default function Index() {
           )}
         </View>
       </Modal>
+
+      <CalendarView
+        visible={showCalendar}
+        onClose={() => setShowCalendar(false)}
+        entryDates={entryDates}
+        onDateSelect={handleDateSelect}
+      />
 
       <NewEntry
         visible={showForm}
