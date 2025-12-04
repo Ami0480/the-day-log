@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   Image,
+  Modal,
   ScrollView,
   TouchableOpacity,
   View,
@@ -25,9 +26,19 @@ export default function Index() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const colorScheme = useColorScheme();
   const iconColor = colorScheme === "dark" ? "#ffffff" : "#000000";
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
 
   const handleSave = (entry: Entry) => {
-    setEntries([...entries, entry]);
+    if (editingIndex !== null) {
+      const updatedEntries = [...entries];
+      updatedEntries[editingIndex] = entry;
+      setEntries(updatedEntries);
+      setEditingIndex(null);
+    } else {
+      // Add new entry
+      setEntries([...entries, entry]);
+    }
   };
   return (
     <ThemedView>
@@ -56,12 +67,24 @@ export default function Index() {
                 elevation: 5,
               }}
             >
-              <ThemedText className="text-gray-500 text-sm mb-2">
-                {entry.date.toLocaleDateString()}
-              </ThemedText>
-              <ThemedText className="font-semibold text-3xl mb-5 border-b">
+              <View className="flex-row justify-between items-center mb-2">
+                <ThemedText className="text-gray-500 text-sm mb-2">
+                  {entry.date.toLocaleDateString()}
+                </ThemedText>
+                <TouchableOpacity
+                  className="bg-orange-300 px-3 py-1 rounded"
+                  onPress={() => {
+                    setEditingIndex(index);
+                    setTimeout(() => setShowForm(true), 10);
+                  }}
+                >
+                  <ThemedText className="text-white text-sm">Edit</ThemedText>
+                </TouchableOpacity>
+              </View>
+              <ThemedText className="font-semibold text-2xl mb-5 border-b">
                 {entry.title}
               </ThemedText>
+
               {entry.photo && entry.photo.length > 0 && (
                 <ScrollView
                   horizontal
@@ -70,11 +93,15 @@ export default function Index() {
                 >
                   <View className="flex-row gap-2">
                     {entry.photo.map((uri, i) => (
-                      <Image
+                      <TouchableOpacity
                         key={i}
-                        source={{ uri }}
-                        className="w-32 h-32 rounded-lg"
-                      />
+                        onPress={() => setSelectedPhoto(uri)}
+                      >
+                        <Image
+                          source={{ uri }}
+                          className="w-32 h-32 rounded-lg"
+                        />
+                      </TouchableOpacity>
                     ))}
                   </View>
                 </ScrollView>
@@ -85,10 +112,33 @@ export default function Index() {
         </View>
       </ScrollView>
 
+      <Modal visible={selectedPhoto !== null} transparent animationType="fade">
+        <View className="flex-1 bg-black/90 justify-center items-center">
+          <TouchableOpacity
+            className="absolute top-12 right-4 z-10 bg-white/20 rounded-full w-10 h-10 items-center justify-center"
+            onPress={() => setSelectedPhoto(null)}
+          >
+            <ThemedText className="text-white text-xl">✕</ThemedText>
+          </TouchableOpacity>
+
+          {selectedPhoto && (
+            <Image
+              source={{ uri: selectedPhoto }}
+              className="w-3/4 h-96 rounded-lg"
+              resizeMode="cover"
+            />
+          )}
+        </View>
+      </Modal>
+
       <NewEntry
         visible={showForm}
-        onClose={() => setShowForm(false)}
+        onClose={() => {
+          setShowForm(false);
+          setEditingIndex(null);
+        }}
         onSave={handleSave}
+        initialData={editingIndex !== null ? entries[editingIndex] : undefined}
       />
     </ThemedView>
   );

@@ -1,6 +1,6 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Alert,
@@ -25,14 +25,42 @@ type NewEntryProps = {
     date: Date;
     photo: string[];
   }) => void;
+  initialData?: {
+    title: string;
+    story: string;
+    date: Date;
+    photo: string[];
+  };
 };
 
-export function NewEntry({ visible, onClose, onSave }: NewEntryProps) {
+export function NewEntry({
+  visible,
+  onClose,
+  onSave,
+  initialData,
+}: NewEntryProps) {
   const [title, setTitle] = useState("");
   const [story, setStory] = useState("");
   const [date, setDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
   const [photo, setPhoto] = useState<string[]>([]);
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+
+  // Load initial data when editing
+  useEffect(() => {
+    if (visible) {
+      if (initialData) {
+        setTitle(initialData.title);
+        setStory(initialData.story);
+        setDate(new Date(initialData.date));
+        setPhoto(initialData.photo || []);
+      } else {
+        setTitle("");
+        setStory("");
+        setDate(new Date());
+        setPhoto([]);
+      }
+    }
+  }, [visible, initialData]);
 
   const pickImage = async () => {
     // Ask for permission
@@ -93,7 +121,6 @@ export function NewEntry({ visible, onClose, onSave }: NewEntryProps) {
   };
 
   const onDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === "ios");
     if (selectedDate) {
       setDate(selectedDate);
     }
@@ -123,17 +150,15 @@ export function NewEntry({ visible, onClose, onSave }: NewEntryProps) {
             keyboardShouldPersistTaps="handled"
           >
             <View className="flex-1 justify-center items-center">
-              <View className="flex-col bg-white w-80 h-auto border border-gray-300 rounded-lg p-4 ">
-                {showDatePicker && (
-                  <View className="items-center w-full">
-                    <DateTimePicker
-                      value={date}
-                      mode="date"
-                      display="compact"
-                      onChange={onDateChange}
-                    />
-                  </View>
-                )}
+              <View className="flex-col bg-white w-96 h-auto border border-gray-300 rounded-lg p-4 ">
+                <View className="items-center w-full mb-5">
+                  <DateTimePicker
+                    value={date}
+                    mode="date"
+                    display="compact"
+                    onChange={onDateChange}
+                  />
+                </View>
 
                 <View>
                   <TextInput
@@ -144,7 +169,6 @@ export function NewEntry({ visible, onClose, onSave }: NewEntryProps) {
                     onChangeText={setTitle}
                   />
                 </View>
-
                 {/* Photos - horizontal scroll */}
                 <ScrollView
                   horizontal
@@ -155,11 +179,13 @@ export function NewEntry({ visible, onClose, onSave }: NewEntryProps) {
                     {/* Display selected photos */}
                     {photo.map((uri, index) => (
                       <View key={index} className="relative">
-                        <Image
-                          source={{ uri }}
-                          className="w-32 h-32 rounded-lg"
-                        />
-                        {/* Remove button */}
+                        <TouchableOpacity onPress={() => setSelectedPhoto(uri)}>
+                          <Image
+                            source={{ uri }}
+                            className="w-32 h-32 rounded-lg"
+                          />
+                        </TouchableOpacity>
+
                         <TouchableOpacity
                           className="absolute top-1 right-1 bg-black/50 rounded-full w-6 h-6 items-center justify-center"
                           onPress={() => {
@@ -173,7 +199,6 @@ export function NewEntry({ visible, onClose, onSave }: NewEntryProps) {
                       </View>
                     ))}
 
-                    {/* Add photo button (show only if less than 5 photos) */}
                     {photo.length < 5 && (
                       <TouchableOpacity
                         className="border border-gray-300 rounded-lg w-32 h-32 items-center justify-center"
@@ -189,7 +214,29 @@ export function NewEntry({ visible, onClose, onSave }: NewEntryProps) {
                     )}
                   </View>
                 </ScrollView>
+                {/* Full size photo modal */}
+                <Modal
+                  visible={selectedPhoto !== null}
+                  transparent
+                  animationType="fade"
+                >
+                  <View className="flex-1 bg-black/90 justify-center items-center">
+                    <TouchableOpacity
+                      className="absolute top-12 right-4 z-10 bg-white/20 rounded-full w-10 h-10 items-center justify-center"
+                      onPress={() => setSelectedPhoto(null)}
+                    >
+                      <ThemedText className="text-white text-xl">✕</ThemedText>
+                    </TouchableOpacity>
 
+                    {selectedPhoto && (
+                      <Image
+                        source={{ uri: selectedPhoto }}
+                        className="w-3/4 h-96 rounded-lg"
+                        resizeMode="cover"
+                      />
+                    )}
+                  </View>
+                </Modal>
                 <TextInput
                   placeholder="Write your story.."
                   placeholderTextColor="#888"
