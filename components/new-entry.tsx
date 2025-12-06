@@ -1,4 +1,3 @@
-import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { useEffect, useState } from "react";
 
@@ -15,6 +14,7 @@ import {
 } from "react-native";
 
 import { ThemedText } from "../components/ThemedText";
+import { CalendarView } from "./CalendarView";
 
 type NewEntryProps = {
   visible: boolean;
@@ -25,6 +25,7 @@ type NewEntryProps = {
     date: Date;
     photo: string[];
   }) => void;
+  onDelete?: () => void;
   initialData?: {
     title: string;
     story: string;
@@ -37,6 +38,7 @@ export function NewEntry({
   visible,
   onClose,
   onSave,
+  onDelete,
   initialData,
 }: NewEntryProps) {
   const [title, setTitle] = useState("");
@@ -44,6 +46,7 @@ export function NewEntry({
   const [date, setDate] = useState(new Date());
   const [photo, setPhoto] = useState<string[]>([]);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   // Load initial data when editing
   useEffect(() => {
@@ -119,21 +122,37 @@ export function NewEntry({
       ]
     );
   };
-
-  const onDateChange = (event: any, selectedDate?: Date) => {
-    if (selectedDate) {
-      setDate(selectedDate);
-    }
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Entry",
+      "Do you want to delete? This cannot be undone.",
+      [
+        { text: "No", style: "cancel" },
+        {
+          text: "Yes",
+          style: "destructive",
+          onPress: () => {
+            onDelete?.();
+            onClose();
+          },
+        },
+      ]
+    );
   };
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("en-AU", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
       day: "numeric",
+      month: "short",
+      year: "numeric",
     });
   };
+  const handleDateSelect = (dateString: string) => {
+    // Convert "2025-12-06" string to Date
+    const [year, month, day] = dateString.split("-").map(Number);
+    setDate(new Date(year, month - 1, day));
+  };
+
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View className="flex-1 bg-black/70">
@@ -150,14 +169,17 @@ export function NewEntry({
             keyboardShouldPersistTaps="handled"
           >
             <View className="flex-1 justify-center items-center">
-              <View className="flex-col bg-white w-96 h-auto border border-gray-300 rounded-lg p-4 ">
-                <View className="items-center w-full mb-5">
-                  <DateTimePicker
-                    value={date}
-                    mode="date"
-                    display="compact"
-                    onChange={onDateChange}
-                  />
+              <View className="flex-col bg-white w-96 h-auto border border-gray-300 rounded-lg p-4">
+                {/* Date - tap to open calendar */}
+                <View className="flex items-center">
+                  <TouchableOpacity
+                    className="items-center w-40 mt-3 mb-10 rounded-md bg-orange-200"
+                    onPress={() => setShowCalendar(true)}
+                  >
+                    <ThemedText className="text-lg">
+                      {formatDate(date)}
+                    </ThemedText>
+                  </TouchableOpacity>
                 </View>
 
                 <View>
@@ -265,11 +287,25 @@ export function NewEntry({
                     <ThemedText>Cancel</ThemedText>
                   </TouchableOpacity>
                 </View>
+                {initialData && onDelete && (
+                  <TouchableOpacity
+                    className="w-20 h-8 bg-red-500 rounded-sm flex justify-center items-center"
+                    onPress={handleDelete}
+                  >
+                    <ThemedText className="text-white">Delete</ThemedText>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
       </View>
+      <CalendarView
+        visible={showCalendar}
+        onClose={() => setShowCalendar(false)}
+        entryDates={[]}
+        onDateSelect={handleDateSelect}
+      />
     </Modal>
   );
 }

@@ -3,6 +3,7 @@ import {
   Image,
   Modal,
   ScrollView,
+  TextInput,
   TouchableOpacity,
   View,
   useColorScheme,
@@ -13,9 +14,10 @@ import { ThemedText } from "../components/ThemedText";
 import { ThemedView } from "../components/ThemedView";
 
 import AddIcon from "../assets/images/add-icon.svg";
-import HamburgerIcon from "../assets/images/hamburger-icon.svg";
+import CalendarIcon from "../assets/images/calendar-icon.svg";
 
 type Entry = {
+  id: string;
   title: string;
   story: string;
   date: Date;
@@ -31,6 +33,7 @@ export default function Index() {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [showCalendar, setShowCalendar] = useState(false);
   const [filterDate, setFilterDate] = useState<string | null>(null);
+  const [searchText, setSearchText] = useState("");
 
   const handleSave = (entry: Entry) => {
     if (editingIndex !== null) {
@@ -40,8 +43,13 @@ export default function Index() {
       setEditingIndex(null);
     } else {
       // Add new entry
-      setEntries([...entries, entry]);
+      setEntries([...entries, { ...entry, id: String(Date.now()) }]);
     }
+  };
+
+  const deleteEntry = (id: string) => {
+    setEntries(entries.filter((e) => e.id !== id));
+    setEditingIndex(null);
   };
 
   // Get all entry dates in YYYY-MM-DD format
@@ -50,43 +58,97 @@ export default function Index() {
     return d.toISOString().split("T")[0];
   });
 
-  // Filter entries by selected date
-  const filteredEntries = filterDate
-    ? entries.filter((entry) => {
-        const d = new Date(entry.date);
-        return d.toISOString().split("T")[0] === filterDate;
-      })
-    : entries;
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString("en-AU", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const filteredEntries = entries.filter((entry) => {
+    // Date filter
+    if (filterDate) {
+      const d = new Date(entry.date);
+      const entryDateStr = d.toISOString().split("T")[0];
+      if (entryDateStr !== filterDate) return false;
+    }
+
+    // Search filter
+    if (searchText.trim()) {
+      const searchWords = searchText
+        .toLowerCase()
+        .split(" ")
+        .filter((word) => word.length > 0);
+
+      // Get searchable text from entry
+      const title = entry.title.toLowerCase();
+      const story = entry.story.toLowerCase();
+      const dateFormatted = formatDate(entry.date).toLowerCase(); // "6 dec 2025"
+      const allText = `${title} ${story} ${dateFormatted}`;
+
+      // Check if ALL search words are found
+      const allWordsMatch = searchWords.every((word) => allText.includes(word));
+
+      if (!allWordsMatch) return false;
+    }
+
+    return true;
+  });
 
   const handleDateSelect = (date: string) => {
     setFilterDate(date);
   };
+
+  const clearFilters = () => {
+    setFilterDate(null);
+    setSearchText("");
+  };
+
   return (
     <ThemedView>
-      <View className="flex-row justify-between items-center p-4">
-        <TouchableOpacity
-          className="flex justify-center"
-          onPress={() => setShowForm(true)}
-        >
-          <AddIcon width={40} height={40} fill={iconColor} />
-        </TouchableOpacity>
+      {/* Search Bar */}
+      <View className="flex-row items-center px-4 pt-4 mb-6 gap-3">
+        <View className="flex-1 flex-row items-center bg-white dark:bg-gray-800 border border-gray-300 rounded-lg px-3">
+          <TextInput
+            className="flex-1 py-3 text-black dark:text-white"
+            placeholder="Search by title, story, date..."
+            placeholderTextColor="#888"
+            value={searchText}
+            onChangeText={setSearchText}
+          />
+          {searchText.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchText("")}>
+              <ThemedText className="text-gray-400 text-lg">✕</ThemedText>
+            </TouchableOpacity>
+          )}
+        </View>
         <TouchableOpacity onPress={() => setShowCalendar(true)}>
-          <HamburgerIcon width={50} height={50} fill={iconColor} />
+          <CalendarIcon width={40} height={40} fill={iconColor} />
         </TouchableOpacity>
       </View>
 
       {/* Show filter indicator */}
-      {filterDate && (
-        <View className="flex-row justify-center items-center mb-2">
-          <ThemedText className="text-gray-500">
-            Showing entries for {filterDate}
+      {(filterDate || searchText) && (
+        <View className="flex-row justify-center items-center my-2 px-4">
+          <ThemedText className="text-gray-500 text-sm">
+            {filterDate && `Date: ${filterDate}`}
+            {filterDate && searchText && " | "}
+            {searchText && `Search: "${searchText}"`}
           </ThemedText>
           <TouchableOpacity
             className="ml-2 bg-gray-200 px-2 py-1 rounded"
-            onPress={() => setFilterDate(null)}
+            onPress={clearFilters}
           >
-            <ThemedText className="text-sm">Clear</ThemedText>
+            <ThemedText className="text-sm">Clear All</ThemedText>
           </TouchableOpacity>
+        </View>
+      )}
+
+      {/* No results message */}
+      {filteredEntries.length === 0 && (searchText || filterDate) && (
+        <View className="flex-1 justify-center items-center">
+          <ThemedText className="text-gray-500">No entries found</ThemedText>
         </View>
       )}
 
@@ -105,8 +167,8 @@ export default function Index() {
               }}
             >
               <View className="flex-row justify-between items-center mb-2">
-                <ThemedText className="text-gray-500 text-sm mb-2">
-                  {entry.date.toLocaleDateString()}
+                <ThemedText className="text-gray-500 text-sm">
+                  {formatDate(entry.date)}
                 </ThemedText>
                 <TouchableOpacity
                   className="bg-orange-300 px-3 py-1 rounded"
@@ -150,6 +212,16 @@ export default function Index() {
         </View>
       </ScrollView>
 
+      <TouchableOpacity
+        className="absolute bottom-8 right-6"
+        onPress={() => {
+          setEditingIndex(null);
+          setShowForm(true);
+        }}
+      >
+        <AddIcon width={40} height={40} fill={iconColor} />
+      </TouchableOpacity>
+
       <Modal visible={selectedPhoto !== null} transparent animationType="fade">
         <View className="flex-1 bg-black/90 justify-center items-center">
           <TouchableOpacity
@@ -183,6 +255,12 @@ export default function Index() {
           setEditingIndex(null);
         }}
         onSave={handleSave}
+        onDelete={() => {
+          if (editingIndex !== null) {
+            deleteEntry(entries[editingIndex].id);
+            setShowForm(false);
+          }
+        }}
         initialData={editingIndex !== null ? entries[editingIndex] : undefined}
       />
     </ThemedView>

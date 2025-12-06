@@ -23,9 +23,9 @@ export function CalendarView({
   });
 
   return (
-    <Modal visible={visible} transparent animationType="slide">
-      <View className="flex-1 bg-black/50 justify-end">
-        <View className="bg-white rounded-t-3xl p-4">
+    <Modal visible={visible} transparent animationType="fade">
+      <View className="flex-1 bg-black/50 justify-center items-center">
+        <View className="bg-white rounded-2xl p-4">
           {/* Header */}
           <View className="flex-row justify-between items-center mb-4">
             <ThemedText className="text-xl font-bold">Calendar</ThemedText>
