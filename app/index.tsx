@@ -1,4 +1,5 @@
-import { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useState } from "react";
 import {
   Image,
   Modal,
@@ -12,6 +13,7 @@ import { CalendarView } from "../components/CalendarView";
 import { NewEntry } from "../components/new-entry";
 import { ThemedText } from "../components/ThemedText";
 import { ThemedView } from "../components/ThemedView";
+import { logOut } from "../src/auth/authMethods";
 
 import AddIcon from "../assets/images/add-icon.svg";
 import CalendarIcon from "../assets/images/calendar-icon.svg";
@@ -24,6 +26,8 @@ type Entry = {
   photo: string[];
 };
 
+const STORAGE_KEY = "diary_entries";
+
 export default function Index() {
   const [showForm, setShowForm] = useState(false);
   const [entries, setEntries] = useState<Entry[]>([]);
@@ -34,6 +38,46 @@ export default function Index() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [filterDate, setFilterDate] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load entries from storage on app start
+  useEffect(() => {
+    loadEntries();
+  }, []);
+
+  // Save entries to storage whenever they change
+  useEffect(() => {
+    if (isLoaded) {
+      saveEntries();
+    }
+  }, [entries]);
+
+  const loadEntries = async () => {
+    try {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Convert date strings back to Date objects
+        const entriesWithDates = parsed.map((entry: any) => ({
+          ...entry,
+          date: new Date(entry.date),
+        }));
+        setEntries(entriesWithDates);
+      }
+    } catch (error) {
+      console.error("Error loading entries:", error);
+    } finally {
+      setIsLoaded(true);
+    }
+  };
+
+  const saveEntries = async () => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    } catch (error) {
+      console.error("Error saving entries:", error);
+    }
+  };
 
   const handleSave = (entry: Entry) => {
     if (editingIndex !== null) {
@@ -55,7 +99,10 @@ export default function Index() {
   // Get all entry dates in YYYY-MM-DD format
   const entryDates = entries.map((entry) => {
     const d = new Date(entry.date);
-    return d.toISOString().split("T")[0];
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   });
 
   const formatDate = (date: Date) => {
@@ -70,7 +117,10 @@ export default function Index() {
     // Date filter
     if (filterDate) {
       const d = new Date(entry.date);
-      const entryDateStr = d.toISOString().split("T")[0];
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      const entryDateStr = `${year}-${month}-${day}`;
       if (entryDateStr !== filterDate) return false;
     }
 
@@ -94,6 +144,11 @@ export default function Index() {
     }
 
     return true;
+  });
+
+  // Sort filtered entries by date (newest first)
+  const sortedEntries = [...filteredEntries].sort((a, b) => {
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
   });
 
   const handleDateSelect = (date: string) => {
@@ -126,6 +181,9 @@ export default function Index() {
         <TouchableOpacity onPress={() => setShowCalendar(true)}>
           <CalendarIcon width={40} height={40} fill={iconColor} />
         </TouchableOpacity>
+        <TouchableOpacity onPress={logOut} className="absolute top-4 left-4">
+          <ThemedText className="text-orange-400">Logout</ThemedText>
+        </TouchableOpacity>
       </View>
 
       {/* Show filter indicator */}
@@ -154,7 +212,7 @@ export default function Index() {
 
       <ScrollView className="flex-1">
         <View className="flex items-center">
-          {filteredEntries.map((entry, index) => (
+          {sortedEntries.map((entry, index) => (
             <View
               key={index}
               className="bg-white w-80 h-auto border border-gray-300 rounded-xl p-4 mb-5"
@@ -173,7 +231,9 @@ export default function Index() {
                 <TouchableOpacity
                   className="bg-orange-300 px-3 py-1 rounded"
                   onPress={() => {
-                    const originalIndex = entries.indexOf(entry);
+                    const originalIndex = entries.findIndex(
+                      (e) => e.id === entry.id
+                    );
                     setEditingIndex(originalIndex);
                     setTimeout(() => setShowForm(true), 10);
                   }}
