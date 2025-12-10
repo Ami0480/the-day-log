@@ -24,14 +24,15 @@ export default function RootLayout() {
   useEffect(() => {
     if (loading) return;
 
-    const inAuthGroup = segments[0] === "login";
+    const currentPage = segments[0];
 
-    if (!user && !inAuthGroup) {
-      // Not logged in, redirect to login
+    if (!user && currentPage !== "login") {
       router.replace("/login");
-    } else if (user && inAuthGroup) {
-      // Logged in, redirect to home
-      router.replace("/");
+    } else if (
+      user &&
+      (currentPage === "login" || currentPage === "index" || !currentPage)
+    ) {
+      router.replace("/log-page");
     }
   }, [user, loading, segments]);
 
@@ -50,14 +51,15 @@ export default function RootLayout() {
           backgroundColor: colorScheme === "dark" ? "#111827" : "#ffffff",
         },
         headerTintColor: colorScheme === "dark" ? "#ffffff" : "#000000",
-        headerTitle: "The Day Log",
         contentStyle: {
           backgroundColor: colorScheme === "dark" ? "#111827" : "#ffffff",
         },
       }}
     >
+      <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="login" options={{ headerShown: false }} />
-      <Stack.Screen name="index" />
+      <Stack.Screen name="log-page" options={{ title: "Home" }} />
+      <Stack.Screen name="diary" options={{ title: "My Diary" }} />
     </Stack>
   );
 }

@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Alert,
   Text,
@@ -8,12 +8,11 @@ import {
   View,
   useColorScheme,
 } from "react-native";
-import {
-  appleSignIn,
-  emailSignIn,
-  emailSignUp,
-  useGoogleAuth,
-} from "../src/auth/authMethods";
+import { emailSignIn, emailSignUp } from "../src/auth/authMethods";
+
+// Uncomment these when you have Apple Developer account:
+// import { useEffect } from "react";
+// import { appleSignIn, useGoogleAuth } from "../src/auth/authMethods";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -22,12 +21,18 @@ export default function LoginScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
 
-  const { request, response, promptAsync, handleGoogleResponse } =
-    useGoogleAuth();
+  // Uncomment when ready for Google Sign In:
+  // const { request, response, promptAsync, handleGoogleResponse } = useGoogleAuth();
+  // useEffect(() => {
+  //   handleGoogleResponse();
+  // }, [response]);
 
-  useEffect(() => {
-    handleGoogleResponse();
-  }, [response]);
+  // const { request, response, promptAsync, handleGoogleResponse } =
+  //   useGoogleAuth();
+
+  // useEffect(() => {
+  //   handleGoogleResponse();
+  // }, [response]);
 
   const handleEmailAuth = async () => {
     if (!email || !password) {
@@ -44,12 +49,20 @@ export default function LoginScreen() {
     }
   };
 
-  const handleAppleSignIn = async () => {
-    const result = await appleSignIn();
-    if (!result.success) {
-      Alert.alert("Error", result.error?.message || "Apple Sign In failed");
-    }
-  };
+  // Uncomment when ready for Apple Sign In:
+  // const handleAppleSignIn = async () => {
+  //   const result = await appleSignIn();
+  //   if (!result.success) {
+  //     Alert.alert("Error", result.error?.message || "Apple Sign In failed");
+  //   }
+  // };
+
+  // const handleAppleSignIn = async () => {
+  //   const result = await appleSignIn();
+  //   if (!result.success) {
+  //     Alert.alert("Error", result.error?.message || "Apple Sign In failed");
+  //   }
+  // };
 
   const bgColor = colorScheme === "dark" ? "bg-gray-900" : "bg-white";
   const textColor = colorScheme === "dark" ? "text-white" : "text-black";
@@ -97,7 +110,7 @@ export default function LoginScreen() {
         </Text>
       </TouchableOpacity>
 
-      <View className="flex-row items-center mb-6">
+      {/* <View className="flex-row items-center mb-6">
         <View className="flex-1 h-px bg-gray-300" />
         <Text className="mx-4 text-gray-500">OR</Text>
         <View className="flex-1 h-px bg-gray-300" />
@@ -120,7 +133,7 @@ export default function LoginScreen() {
         <Text className="text-white text-center font-semibold text-lg">
           Sign in with Google
         </Text>
-      </TouchableOpacity>
+      // </TouchableOpacity> */}
     </View>
   );
 }
