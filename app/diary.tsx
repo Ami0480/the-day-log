@@ -213,7 +213,7 @@ export default function Diary() {
           {sortedEntries.map((entry) => (
             <View
               key={entry.id}
-              className="bg-white w-[320px] h-auto border border-gray-300 rounded-xl p-4 mb-5"
+              className="bg-white w-[340px] h-auto border border-gray-300 rounded-xl p-4 mb-5"
               style={{
                 shadowColor: "#000",
                 shadowOffset: { width: 4, height: 4 },
