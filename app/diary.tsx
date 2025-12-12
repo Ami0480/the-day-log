@@ -31,7 +31,7 @@ export default function Diary() {
   const [showForm, setShowForm] = useState(false);
   const [entries, setEntries] = useState<Entry[]>([]);
   const colorScheme = useColorScheme();
-  const iconColor = colorScheme === "dark" ? "#ffffff" : "#000000";
+  const iconColor = colorScheme === "dark" ? "#ffffff" : "#D08A54";
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [showCalendar, setShowCalendar] = useState(false);
@@ -153,10 +153,21 @@ export default function Diary() {
   return (
     <ThemedView>
       {/* Search Bar */}
-      <View className="flex-row items-center px-4 pt-2 mb-4 gap-3">
-        <View className="flex-1 flex-row items-center bg-white dark:bg-gray-800 border border-gray-300 rounded-lg px-3">
+      <View className="flex-row justify-center items-center gap-5 py-4 px-8">
+        <TouchableOpacity
+          onPress={() => {
+            setEditingIndex(null);
+            setShowForm(true);
+          }}
+        >
+          <View className="bg-[#D08A54] items-center justify-center w-12 h-12 rounded-full">
+            <ThemedText className="text-white text-4xl">+</ThemedText>
+          </View>
+        </TouchableOpacity>
+
+        <View className="flex-1 flex-row py-3 bg-white dark:bg-gray-800 border border-[#D08A54] rounded-lg px-3">
           <TextInput
-            className="flex-1 py-3 text-black dark:text-white"
+            className="flex-1 text-black dark:text-white"
             placeholder="Search by title, story, date..."
             placeholderTextColor="#888"
             value={searchText}
@@ -202,7 +213,7 @@ export default function Diary() {
           {sortedEntries.map((entry) => (
             <View
               key={entry.id}
-              className="bg-white w-80 h-auto border border-gray-300 rounded-xl p-4 mb-5"
+              className="bg-white w-[320px] h-auto border border-gray-300 rounded-xl p-4 mb-5"
               style={{
                 shadowColor: "#000",
                 shadowOffset: { width: 4, height: 4 },
@@ -216,7 +227,7 @@ export default function Diary() {
                   {formatDate(entry.date)}
                 </ThemedText>
                 <TouchableOpacity
-                  className="bg-[#F4A373] px-3 py-1 rounded"
+                  className="bg-[#D08A54] px-3 py-1 rounded"
                   onPress={() => {
                     const originalIndex = entries.findIndex(
                       (e) => e.id === entry.id
@@ -258,18 +269,6 @@ export default function Diary() {
           ))}
         </View>
       </ScrollView>
-
-      <TouchableOpacity
-        className="absolute bottom-8 right-6"
-        onPress={() => {
-          setEditingIndex(null);
-          setShowForm(true);
-        }}
-      >
-        <View className="bg-[#F4A373] p-3 rounded-full">
-          <ThemedText className="text-white">New Story</ThemedText>
-        </View>
-      </TouchableOpacity>
 
       <Modal visible={selectedPhoto !== null} transparent animationType="fade">
         <View className="flex-1 bg-black/90 justify-center items-center">

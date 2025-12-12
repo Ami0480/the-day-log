@@ -38,7 +38,7 @@ export default function LogPage() {
         />
       </TouchableOpacity>
 
-      <Text className="text-gray-500 mb-8">Tap to write your story</Text>
+      <Text className="text-gray-500 mb-8">Tap Log to start</Text>
 
       <TouchableOpacity onPress={logOut}>
         <Text className="text-[#F4A373]">Logout</Text>

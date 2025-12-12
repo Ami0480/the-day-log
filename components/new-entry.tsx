@@ -173,7 +173,7 @@ export function NewEntry({
                 {/* Date - tap to open calendar */}
                 <View className="flex items-center">
                   <TouchableOpacity
-                    className="items-center w-40 mt-3 mb-10 rounded-md bg-[#F4A373]"
+                    className="items-center w-40 mt-3 mb-10 rounded-md bg-[#D08A54] "
                     onPress={() => setShowCalendar(true)}
                   >
                     <ThemedText className="text-lg text-white">
@@ -270,23 +270,27 @@ export function NewEntry({
                   onChangeText={setStory}
                 />
               </View>
-              <View className="flex-row my-2 gap-2">
-                <View className="w-20 h-8 bg-[#F4A373] rounded-sm flex justify-center items-center">
+              <View className="flex-row my-4 gap-4">
+                <View className="w-20 h-8 bg-[#D08A54]  rounded-md flex justify-center items-center">
                   <TouchableOpacity onPress={handleSave}>
-                    <ThemedText className="text-white">Save</ThemedText>
+                    <ThemedText className="text-white text-lg">Save</ThemedText>
                   </TouchableOpacity>
                 </View>
-                <View className="w-20 h-8 bg-[#F4A373] rounded-sm flex justify-center items-center">
+                <View className="w-20 h-8 bg-[#D08A54] rounded-md flex justify-center items-center">
                   <TouchableOpacity onPress={handleCancel}>
-                    <ThemedText className="text-white">Cancel</ThemedText>
+                    <ThemedText className="text-white text-lg">
+                      Cancel
+                    </ThemedText>
                   </TouchableOpacity>
                 </View>
                 {initialData && onDelete && (
                   <TouchableOpacity
-                    className="w-20 h-8 bg-red-500 rounded-sm flex justify-center items-center"
+                    className="w-20 h-8 bg-red-500 rounded-md flex justify-center items-center"
                     onPress={handleDelete}
                   >
-                    <ThemedText className="text-white">Delete</ThemedText>
+                    <ThemedText className="text-white text-lg">
+                      Delete
+                    </ThemedText>
                   </TouchableOpacity>
                 )}
               </View>
