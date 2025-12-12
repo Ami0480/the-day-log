@@ -15,7 +15,6 @@ import { NewEntry } from "../components/new-entry";
 import { ThemedText } from "../components/ThemedText";
 import { ThemedView } from "../components/ThemedView";
 
-import AddIcon from "../assets/images/add-icon.svg";
 import CalendarIcon from "../assets/images/calendar-icon.svg";
 
 type Entry = {
@@ -217,7 +216,7 @@ export default function Diary() {
                   {formatDate(entry.date)}
                 </ThemedText>
                 <TouchableOpacity
-                  className="bg-orange-300 px-3 py-1 rounded"
+                  className="bg-[#F4A373] px-3 py-1 rounded"
                   onPress={() => {
                     const originalIndex = entries.findIndex(
                       (e) => e.id === entry.id
@@ -267,7 +266,9 @@ export default function Diary() {
           setShowForm(true);
         }}
       >
-        <AddIcon width={40} height={40} fill={iconColor} />
+        <View className="bg-[#F4A373] p-3 rounded-full">
+          <ThemedText className="text-white">New Story</ThemedText>
+        </View>
       </TouchableOpacity>
 
       <Modal visible={selectedPhoto !== null} transparent animationType="fade">

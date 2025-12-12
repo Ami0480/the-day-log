@@ -173,10 +173,10 @@ export function NewEntry({
                 {/* Date - tap to open calendar */}
                 <View className="flex items-center">
                   <TouchableOpacity
-                    className="items-center w-40 mt-3 mb-10 rounded-md bg-orange-200"
+                    className="items-center w-40 mt-3 mb-10 rounded-md bg-[#F4A373]"
                     onPress={() => setShowCalendar(true)}
                   >
-                    <ThemedText className="text-lg">
+                    <ThemedText className="text-lg text-white">
                       {formatDate(date)}
                     </ThemedText>
                   </TouchableOpacity>
@@ -271,20 +271,14 @@ export function NewEntry({
                 />
               </View>
               <View className="flex-row my-2 gap-2">
-                <View className="w-20 h-8 bg-orange-300 rounded-sm flex justify-center items-center">
-                  <TouchableOpacity
-                    className=" text-white"
-                    onPress={handleSave}
-                  >
-                    <ThemedText>Save</ThemedText>
+                <View className="w-20 h-8 bg-[#F4A373] rounded-sm flex justify-center items-center">
+                  <TouchableOpacity onPress={handleSave}>
+                    <ThemedText className="text-white">Save</ThemedText>
                   </TouchableOpacity>
                 </View>
-                <View className="w-20 h-8 bg-orange-300 rounded-sm flex justify-center items-center">
-                  <TouchableOpacity
-                    className=" text-white"
-                    onPress={handleCancel}
-                  >
-                    <ThemedText>Cancel</ThemedText>
+                <View className="w-20 h-8 bg-[#F4A373] rounded-sm flex justify-center items-center">
+                  <TouchableOpacity onPress={handleCancel}>
+                    <ThemedText className="text-white">Cancel</ThemedText>
                   </TouchableOpacity>
                 </View>
                 {initialData && onDelete && (

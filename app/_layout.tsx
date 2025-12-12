@@ -51,6 +51,7 @@ export default function RootLayout() {
           backgroundColor: colorScheme === "dark" ? "#111827" : "#ffffff",
         },
         headerTintColor: colorScheme === "dark" ? "#ffffff" : "#000000",
+
         contentStyle: {
           backgroundColor: colorScheme === "dark" ? "#111827" : "#ffffff",
         },
@@ -58,8 +59,14 @@ export default function RootLayout() {
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="login" options={{ headerShown: false }} />
-      <Stack.Screen name="log-page" options={{ title: "Home" }} />
-      <Stack.Screen name="diary" options={{ title: "My Diary" }} />
+      <Stack.Screen name="log-page" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="diary"
+        options={{
+          title: "My Diary",
+          headerBackTitle: "Back",
+        }}
+      />
     </Stack>
   );
 }

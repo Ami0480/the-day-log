@@ -19,7 +19,7 @@ export function CalendarView({
   const markedDates: { [key: string]: { marked: boolean; dotColor: string } } =
     {};
   entryDates.forEach((date) => {
-    markedDates[date] = { marked: true, dotColor: "#f97316" };
+    markedDates[date] = { marked: true, dotColor: "#F4A373" };
   });
 
   return (
@@ -30,7 +30,7 @@ export function CalendarView({
           <View className="flex-row justify-between items-center mb-4">
             <ThemedText className="text-xl font-bold">Calendar</ThemedText>
             <TouchableOpacity onPress={onClose}>
-              <ThemedText className="text-orange-500 text-lg">Close</ThemedText>
+              <ThemedText className="text-[#F4A373] text-lg">Close</ThemedText>
             </TouchableOpacity>
           </View>
 
@@ -42,10 +42,10 @@ export function CalendarView({
               onClose();
             }}
             theme={{
-              todayTextColor: "#f97316",
-              selectedDayBackgroundColor: "#f97316",
-              arrowColor: "#f97316",
-              dotColor: "#f97316",
+              todayTextColor: "#F4A373",
+              selectedDayBackgroundColor: "#F4A373",
+              arrowColor: "#F4A373",
+              dotColor: "#F4A373",
             }}
           />
         </View>

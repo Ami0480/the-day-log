@@ -64,9 +64,9 @@ export default function LoginScreen() {
   //   }
   // };
 
-  const bgColor = colorScheme === "dark" ? "bg-gray-900" : "bg-white";
+  const bgColor = colorScheme === "dark" ? "bg-gray-900" : "bg-[#FFF6E8]";
   const textColor = colorScheme === "dark" ? "text-white" : "text-black";
-  const inputBg = colorScheme === "dark" ? "bg-gray-800" : "bg-gray-100";
+  const inputBg = colorScheme === "dark" ? "bg-gray-800" : "bg-white";
 
   return (
     <View className={`flex-1 justify-center px-8 ${bgColor}`}>
@@ -94,7 +94,7 @@ export default function LoginScreen() {
       />
 
       <TouchableOpacity
-        className="bg-orange-400 rounded-lg py-3 mb-4"
+        className="bg-[#F4A373] rounded-lg py-3 mb-4"
         onPress={handleEmailAuth}
       >
         <Text className="text-white text-center font-semibold text-lg">
@@ -103,7 +103,7 @@ export default function LoginScreen() {
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)}>
-        <Text className="text-orange-400 text-center mb-6">
+        <Text className="text-[#F4A373]  text-center mb-6">
           {isSignUp
             ? "Already have an account? Sign In"
             : "Don't have an account? Sign Up"}
