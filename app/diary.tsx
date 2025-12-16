@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  Animated,
   Image,
   Modal,
   ScrollView,
@@ -38,7 +38,29 @@ export default function Diary() {
   const [filterDate, setFilterDate] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
-  const router = useRouter();
+
+  const scrollY = useRef(new Animated.Value(0)).current;
+
+  // Header shrinks as you scroll
+  const headerHeight = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [80, 50],
+    extrapolate: "clamp",
+  });
+
+  // Header opacity fades slightly
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [1, 0.8],
+    extrapolate: "clamp",
+  });
+
+  // + button scales down
+  const buttonScale = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [1, 0.9],
+    extrapolate: "clamp",
+  });
 
   useEffect(() => {
     loadEntries();
@@ -152,39 +174,50 @@ export default function Diary() {
 
   return (
     <ThemedView>
-      {/* Search Bar */}
-      <View className="flex-row justify-center items-center gap-5 py-4 px-8">
-        <TouchableOpacity
-          onPress={() => {
-            setEditingIndex(null);
-            setShowForm(true);
-          }}
-        >
-          <View className="bg-[#D08A54] items-center justify-center w-12 h-12 rounded-full">
-            <ThemedText className="text-white text-4xl">+</ThemedText>
-          </View>
-        </TouchableOpacity>
-
-        <View className="flex-1 flex-row py-3 bg-white dark:bg-gray-800 border border-[#D08A54] rounded-lg px-3">
-          <TextInput
-            className="flex-1 text-black dark:text-white"
-            placeholder="Search by title, story, date..."
-            placeholderTextColor="#888"
-            value={searchText}
-            onChangeText={setSearchText}
-          />
-          {searchText.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchText("")}>
-              <ThemedText className="text-gray-400 text-lg">✕</ThemedText>
+      {/* Animated Header */}
+      <Animated.View
+        style={{
+          height: headerHeight,
+          opacity: headerOpacity,
+        }}
+        className="justify-center"
+      >
+        <View className="flex-row justify-center items-center gap-5 px-8">
+          {/* Animated + Button */}
+          <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
+            <TouchableOpacity
+              onPress={() => {
+                setEditingIndex(null);
+                setShowForm(true);
+              }}
+            >
+              <View className="bg-[#D08A54] items-center justify-center w-12 h-12 rounded-full">
+                <ThemedText className="text-white text-4xl">+</ThemedText>
+              </View>
             </TouchableOpacity>
-          )}
-        </View>
-        <TouchableOpacity onPress={() => setShowCalendar(true)}>
-          <CalendarIcon width={40} height={40} fill={iconColor} />
-        </TouchableOpacity>
-      </View>
+          </Animated.View>
 
-      {/* Show filter indicator */}
+          <View className="flex-1 flex-row py-3 bg-white dark:bg-gray-800 border border-[#D08A54] rounded-lg px-3">
+            <TextInput
+              className="flex-1 text-black dark:text-white"
+              placeholder="Search by title, story, date..."
+              placeholderTextColor="#888"
+              value={searchText}
+              onChangeText={setSearchText}
+            />
+            {searchText.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchText("")}>
+                <ThemedText className="text-gray-400 text-lg">✕</ThemedText>
+              </TouchableOpacity>
+            )}
+          </View>
+          <TouchableOpacity onPress={() => setShowCalendar(true)}>
+            <CalendarIcon width={40} height={40} fill={iconColor} />
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+
+      {/* Filter indicator */}
       {(filterDate || searchText) && (
         <View className="flex-row justify-center items-center my-2 px-4">
           <ThemedText className="text-gray-500 text-sm">
@@ -208,8 +241,16 @@ export default function Diary() {
         </View>
       )}
 
-      <ScrollView className="flex-1">
-        <View className="flex items-center">
+      {/* Animated ScrollView - only one! */}
+      <Animated.ScrollView
+        className="flex-1"
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
+      >
+        <View className="flex items-center pt-2">
           {sortedEntries.map((entry) => (
             <View
               key={entry.id}
@@ -243,6 +284,7 @@ export default function Diary() {
                 {entry.title}
               </ThemedText>
 
+              {/* Photos - horizontal scroll */}
               {entry.photo && entry.photo.length > 0 && (
                 <ScrollView
                   horizontal
@@ -268,8 +310,9 @@ export default function Diary() {
             </View>
           ))}
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
+      {/* Photo Modal */}
       <Modal visible={selectedPhoto !== null} transparent animationType="fade">
         <View className="flex-1 bg-black/90 justify-center items-center">
           <TouchableOpacity
