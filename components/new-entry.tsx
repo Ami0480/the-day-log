@@ -1,3 +1,4 @@
+import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 import { useEffect, useState } from "react";
 
@@ -65,6 +66,24 @@ export function NewEntry({
     }
   }, [visible, initialData]);
 
+  const savePhotoLocally = async (uri: string): Promise<string> => {
+    const fileName = `photo_${Date.now()}_${Math.random()
+      .toString(36)
+      .substring(7)}.jpg`;
+    const destination = `${FileSystem.documentDirectory}${fileName}`;
+
+    try {
+      await FileSystem.copyAsync({
+        from: uri,
+        to: destination,
+      });
+      return destination;
+    } catch (error) {
+      console.error("Error saving photo:", error);
+      return uri; // Return original if copy fails
+    }
+  };
+
   const pickImage = async () => {
     // Ask for permission
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -88,8 +107,10 @@ export function NewEntry({
     });
 
     if (!result.canceled) {
-      const newPhotos = result.assets.map((asset) => asset.uri);
-      setPhoto([...photo, ...newPhotos].slice(0, 5));
+      const savedPhotos = await Promise.all(
+        result.assets.map(async (asset) => await savePhotoLocally(asset.uri))
+      );
+      setPhoto([...photo, ...savedPhotos].slice(0, 5));
     }
   };
   const handleSave = () => {
@@ -169,14 +190,14 @@ export function NewEntry({
             keyboardShouldPersistTaps="handled"
           >
             <View className="flex-1 justify-center items-center">
-              <View className="flex-col bg-white w-96 h-auto border border-gray-300 rounded-lg p-4">
+              <View className="flex-col bg-white dark:bg-gray-800 w-96 h-auto border border-gray-300 dark:border-[#DCE8D2] rounded-lg p-4">
                 {/* Date - tap to open calendar */}
                 <View className="flex items-center">
                   <TouchableOpacity
-                    className="items-center w-40 mt-3 mb-10 rounded-md bg-[#D08A54] "
+                    className="items-center w-40 mt-3 mb-10 rounded-md bg-[#D08A54] dark:bg-[#DCE8D2]"
                     onPress={() => setShowCalendar(true)}
                   >
-                    <ThemedText className="text-lg text-white">
+                    <ThemedText className="text-lg text-white dark:text-black">
                       {formatDate(date)}
                     </ThemedText>
                   </TouchableOpacity>
@@ -186,7 +207,7 @@ export function NewEntry({
                   <TextInput
                     placeholder="Title"
                     placeholderTextColor="#888"
-                    className="border-b border-gray-800 font-semibold text-2xl mb-5"
+                    className="border-b border-gray-800 font-semibold text-2xl mb-5 dark:text-white"
                     value={title}
                     onChangeText={setTitle}
                   />
@@ -223,13 +244,13 @@ export function NewEntry({
 
                     {photo.length < 5 && (
                       <TouchableOpacity
-                        className="border border-gray-300 rounded-lg w-32 h-32 items-center justify-center"
+                        className="border border-gray-300 dark:border-[#DCE8D2] rounded-lg w-32 h-32 items-center justify-center"
                         onPress={pickImage}
                       >
-                        <ThemedText className="text-4xl text-gray-400">
+                        <ThemedText className="text-4xl text-gray-400 dark:text-[#DCE8D2]">
                           +
                         </ThemedText>
-                        <ThemedText className="text-gray-400 text-sm">
+                        <ThemedText className="text-gray-400 text-sm dark:text-[#DCE8D2]">
                           {photo.length}/5
                         </ThemedText>
                       </TouchableOpacity>
@@ -262,7 +283,7 @@ export function NewEntry({
                 <TextInput
                   placeholder="Write your story.."
                   placeholderTextColor="#888"
-                  className="text-lg mt-4 min-h-32"
+                  className="text-lg mt-4 min-h-32 dark:text-white"
                   multiline
                   textAlignVertical="top"
                   scrollEnabled={true}
@@ -271,14 +292,16 @@ export function NewEntry({
                 />
               </View>
               <View className="flex-row my-4 gap-4">
-                <View className="w-20 h-8 bg-[#D08A54]  rounded-md flex justify-center items-center">
+                <View className="w-20 h-8 bg-[#D08A54] dark:bg-[#DCE8D2] rounded-md flex justify-center items-center">
                   <TouchableOpacity onPress={handleSave}>
-                    <ThemedText className="text-white text-lg">Save</ThemedText>
+                    <ThemedText className="text-white text-lg dark:text-black ">
+                      Save
+                    </ThemedText>
                   </TouchableOpacity>
                 </View>
-                <View className="w-20 h-8 bg-[#D08A54] rounded-md flex justify-center items-center">
+                <View className="w-20 h-8 bg-[#D08A54] dark:bg-[#DCE8D2] rounded-md flex justify-center items-center">
                   <TouchableOpacity onPress={handleCancel}>
-                    <ThemedText className="text-white text-lg">
+                    <ThemedText className="text-white text-lg dark:text-black ">
                       Cancel
                     </ThemedText>
                   </TouchableOpacity>

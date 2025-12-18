@@ -16,8 +16,12 @@ export function CalendarView({
   onDateSelect,
 }: CalendarViewProps) {
   // Create marked dates object with dots
-  const markedDates: { [key: string]: { marked: boolean; dotColor: string } } =
-    {};
+  const markedDates: {
+    [key: string]: {
+      marked: boolean;
+      dotColor: string;
+    };
+  } = {};
   entryDates.forEach((date) => {
     markedDates[date] = { marked: true, dotColor: "#F4A373" };
   });
@@ -25,7 +29,7 @@ export function CalendarView({
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View className="flex-1 bg-black/50 justify-center items-center">
-        <View className="bg-white rounded-2xl p-4">
+        <View className="bg-white rounded-2xl p-4 dark:bg-gray-800">
           {/* Header */}
           <View className="flex-row justify-between items-center mb-4">
             <ThemedText className="text-xl font-bold">Calendar</ThemedText>

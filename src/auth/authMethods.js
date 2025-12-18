@@ -44,15 +44,22 @@ export const logOut = async () => {
 WebBrowser.maybeCompleteAuthSession();
 
 export const useGoogleAuth = () => {
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    clientId:
-      "458063018506-68db7dp34tjugsro9gi6r0uovpi0mc0e.apps.googleusercontent.com",
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    expoClientId:
+      "458063018506-17mvpk6f5he6iic0jdf0jaihvosla9ls.apps.googleusercontent.com",
+    webClientId:
+      "458063018506-17mvpk6f5he6iic0jdf0jaihvosla9ls.apps.googleusercontent.com",
+    iosClientId:
+      "458063018506-17mvpk6f5he6iic0jdf0jaihvosla9ls.apps.googleusercontent.com",
   });
 
   async function handleGoogleResponse() {
     if (response?.type === "success") {
-      const { id_token } = response.params;
-      const credential = GoogleAuthProvider.credential(id_token);
+      const { authentication } = response;
+      const credential = GoogleAuthProvider.credential(
+        authentication?.idToken,
+        authentication?.accessToken
+      );
       await signInWithCredential(auth, credential);
     }
   }

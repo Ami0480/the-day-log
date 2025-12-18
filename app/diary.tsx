@@ -31,7 +31,7 @@ export default function Diary() {
   const [showForm, setShowForm] = useState(false);
   const [entries, setEntries] = useState<Entry[]>([]);
   const colorScheme = useColorScheme();
-  const iconColor = colorScheme === "dark" ? "#ffffff" : "#D08A54";
+  const iconColor = colorScheme === "dark" ? "#DCE8D2" : "#D08A54";
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [showCalendar, setShowCalendar] = useState(false);
@@ -75,12 +75,14 @@ export default function Diary() {
   const loadEntries = async () => {
     try {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
+      console.log("Loaded from storage:", stored);
       if (stored) {
         const parsed = JSON.parse(stored);
         const entriesWithDates = parsed.map((entry: any) => ({
           ...entry,
           date: new Date(entry.date),
         }));
+        console.log("Entries with photos:", entriesWithDates);
         setEntries(entriesWithDates);
       }
     } catch (error) {
@@ -191,13 +193,15 @@ export default function Diary() {
                 setShowForm(true);
               }}
             >
-              <View className="bg-[#D08A54] items-center justify-center w-12 h-12 rounded-full">
-                <ThemedText className="text-white text-4xl">+</ThemedText>
+              <View className="bg-[#D08A54] dark:bg-[#DCE8D2] items-center justify-center w-12 h-12 rounded-full">
+                <ThemedText className="text-white text-4xl dark:text-black">
+                  +
+                </ThemedText>
               </View>
             </TouchableOpacity>
           </Animated.View>
 
-          <View className="flex-1 flex-row py-3 bg-white dark:bg-gray-800 border border-[#D08A54] rounded-lg px-3">
+          <View className="flex-1 flex-row py-3 bg-white dark:bg-gray-800 border border-[#D08A54] dark:border-[#DCE8D2] rounded-lg px-3">
             <TextInput
               className="flex-1 text-black dark:text-white"
               placeholder="Search by title, story, date..."
@@ -229,7 +233,9 @@ export default function Diary() {
             className="ml-2 bg-gray-200 px-2 py-1 rounded"
             onPress={clearFilters}
           >
-            <ThemedText className="text-sm">Clear All</ThemedText>
+            <ThemedText className="text-sm dark:text-black">
+              Clear All
+            </ThemedText>
           </TouchableOpacity>
         </View>
       )}
@@ -254,7 +260,7 @@ export default function Diary() {
           {sortedEntries.map((entry) => (
             <View
               key={entry.id}
-              className="bg-white w-[340px] h-auto border border-gray-300 rounded-xl p-4 mb-5"
+              className="bg-white dark:bg-gray-800 w-[340px] h-auto border border-gray-300 dark:border-[#DCE8D2] rounded-xl p-4 mb-5"
               style={{
                 shadowColor: "#000",
                 shadowOffset: { width: 4, height: 4 },
@@ -268,7 +274,7 @@ export default function Diary() {
                   {formatDate(entry.date)}
                 </ThemedText>
                 <TouchableOpacity
-                  className="bg-[#D08A54] px-3 py-1 rounded"
+                  className="bg-[#D08A54] dark:bg-[#DCE8D2] px-3 py-1 rounded"
                   onPress={() => {
                     const originalIndex = entries.findIndex(
                       (e) => e.id === entry.id
@@ -277,7 +283,9 @@ export default function Diary() {
                     setTimeout(() => setShowForm(true), 10);
                   }}
                 >
-                  <ThemedText className="text-white text-sm">Edit</ThemedText>
+                  <ThemedText className="text-white text-sm dark:text-black">
+                    Edit
+                  </ThemedText>
                 </TouchableOpacity>
               </View>
               <ThemedText className="font-semibold text-2xl mb-5 border-b">
